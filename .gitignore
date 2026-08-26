@@ -27,3 +27,5 @@ pnpm-debug.log*
 
 CLAUDE.md
 AGENTS.md
+
+nodemon.json

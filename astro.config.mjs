@@ -6,15 +6,15 @@ import node from "@astrojs/node";
 
 import vue from "@astrojs/vue";
 
+import netlify from "@astrojs/netlify";
+
 // https://astro.build/config
 export default defineConfig({
   vite: {
       plugins: [tailwindcss()],
   },
 
-  adapter: node({
-    mode: "standalone",
-  }),
+  adapter: netlify(),
 
   integrations: [vue()],
 });
