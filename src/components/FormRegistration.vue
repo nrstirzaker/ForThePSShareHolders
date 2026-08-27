@@ -46,11 +46,13 @@ function deriveAnyHeaderErrors(){
 
   if ( errorMessages.value?.maxEmailsFromThisIPAddress && errorMessages.value.maxEmailsFromThisIPAddress !== NBSP ){
     headerErrorMessage.value  = errorMessages.value.maxEmailsFromThisIPAddress;
+    logger.info({level:"info",message:"Max emails from location exceeded"})
     return
   }
 
   if ( errorMessages.value?.maxRegistrationSpeed && errorMessages.value.maxRegistrationSpeed !== NBSP ){
     headerErrorMessage.value  = errorMessages.value.maxRegistrationSpeed;
+    logger.info({level:"info",message:"Registration too quick"})
     return
   }
 
