@@ -24,26 +24,38 @@ export const POST: APIRoute = (async ({request, clientAddress}: APIContext) => {
     let lastId: number | undefined;
 
     logger.log({level: "info", message: "MULTI_REGISTRATION_LIMIT: " + MULTI_REGISTRATION_LIMIT})
+    logger.log({level: "info", message: "ipAddress: " + ipAddress})
 
     try {
 
-        const mostRecentCreatedAtRecords = await sql`select max(created_at)
-                                                     from ${sql.unsafe(TABLE)}
-                                                     where ip_address = ${ipAddress}
-                                                       and ip_address != null`
 
-        const mostRecentCreatedAtInMillis = DateTime.fromJSDate(mostRecentCreatedAtRecords[0].max).toUTC().toMillis()
-        if (DateTime.utc().toMillis() - mostRecentCreatedAtInMillis < MULTI_REGISTRATION_TIMEOUT) {
-            errorCodes.push(ErrorCode.MaxRegistrationSpeed);
-            logger.log({level: "info", message: "Speed of Registration Limit reached" + ipAddress});
-        }
-        if (!ipAddress) {
+
+        if (ipAddress) {
+
+            const mostRecentCreatedAtRecords = await sql`select max(created_at)
+                                                         from ${sql.unsafe(TABLE)}
+                                                         where ip_address = ${ipAddress}`
+
+            const mostRecentCreatedAtInMillis = DateTime.fromJSDate(mostRecentCreatedAtRecords[0].max).toUTC().toMillis()
+
+            if (DateTime.utc().toMillis() - mostRecentCreatedAtInMillis < MULTI_REGISTRATION_TIMEOUT) {
+                errorCodes.push(ErrorCode.MaxRegistrationSpeed);
+                logger.log({level: "info", message: "Speed of Registration Limit reached" + ipAddress});
+            }
+
+            logger.info({level: "info", message: "mostRecentCreatedAtInMillis: " + mostRecentCreatedAtInMillis})
+            logger.info({level: "info", message: "MULTI_REGISTRATION_TIMEOUT: " + MULTI_REGISTRATION_TIMEOUT})
+
 
             const howManyRegisteredFromThisIPRecords = await sql`select count(*)
                                                                  from ${sql.unsafe(TABLE)}
                                                                  where ip_address = ${ipAddress}`
+
             const howManyRegisteredFromThisIP: number = parseInt(howManyRegisteredFromThisIPRecords[0].count);
-            if (howManyRegisteredFromThisIP > MULTI_REGISTRATION_LIMIT) {
+
+            //logger.log({level: "info", message: "howManyRegisteredFromThisIPRecords[0].count: " + howManyRegisteredFromThisIPRecords[0].count})
+
+            if (howManyRegisteredFromThisIP >= MULTI_REGISTRATION_LIMIT) {
                 errorCodes.push(ErrorCode.MaxEmailsFromThisIPAddress)
                 logger.log({level: "info", message: "Max Registration Limit reached for ip address" + ipAddress});
             }
