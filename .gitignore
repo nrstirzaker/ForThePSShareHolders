@@ -29,3 +29,6 @@ CLAUDE.md
 AGENTS.md
 
 nodemon.json
+
+# Local Netlify folder
+.netlify

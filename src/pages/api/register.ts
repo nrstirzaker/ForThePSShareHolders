@@ -1,4 +1,4 @@
-import type {APIRoute} from "astro";
+import type {APIRoute, APIContext } from "astro";
 import {sql} from '@/lib/neon';
 import {DateTime} from 'luxon'
 
@@ -12,11 +12,11 @@ const MULTI_REGISTRATION_LIMIT: number = parseInt(import.meta.env.MULTI_REGISTRA
 
 const TABLE: string = "participants";
 
-export const POST: APIRoute = (async ({request}) => {
+export const POST: APIRoute = (async ({request, clientAddress} : APIContext) => {
 
     const formData = await request.formData();
     const emailAddress = formData.get("emailAddress")?.toString();
-    const ipAddress = formData.get("ipAddress")?.toString();
+    const ipAddress = clientAddress
 
     const createdAt = DateTime.now().toUTC();
     const errorCodes: ErrorCode[] = []
@@ -48,7 +48,7 @@ export const POST: APIRoute = (async ({request}) => {
         }
         if (errorCodes.length === 0) {
 
-            const insertResponse = await sql`INSERT INTO participants ("email_address", "ip_address", "created_at")
+            await sql`INSERT INTO participants ("email_address", "ip_address", "created_at")
                                              VALUES (${emailAddress}, ${ipAddress}, ${createdAt})`;
 
             logger.log({level: "info", message: "Email: " + emailAddress + ", ip address: " + ipAddress + " registered"});
