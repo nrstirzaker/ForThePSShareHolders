@@ -27,7 +27,7 @@ import {RegisterAPIDataResponse} from "@/lib/RegisterAPIDataResponse.ts";
 import {ErrorCode} from "@/lib/error/ErrorCode.ts";
 import {ErrorMessages} from "@/lib/error/ErrorMessages.ts";
 import {NBSP} from "@/constants/constants.ts";
-import {logger} from "@/utils/logger"
+
 
 
 
@@ -46,13 +46,11 @@ function deriveAnyHeaderErrors(){
 
   if ( errorMessages.value?.maxEmailsFromThisIPAddress && errorMessages.value.maxEmailsFromThisIPAddress !== NBSP ){
     headerErrorMessage.value  = errorMessages.value.maxEmailsFromThisIPAddress;
-    logger.info({level:"info",message:"Max emails from location exceeded"})
     return
   }
 
   if ( errorMessages.value?.maxRegistrationSpeed && errorMessages.value.maxRegistrationSpeed !== NBSP ){
     headerErrorMessage.value  = errorMessages.value.maxRegistrationSpeed;
-    logger.info({level:"info",message:"Registration too quick"})
     return
   }
 
