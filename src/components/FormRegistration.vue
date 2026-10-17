@@ -1,84 +1,72 @@
 <template>
+	<form @submit.prevent="submit">
+		<div>{{ headerErrorMessage }}</div>
 
-  <form @submit.prevent="submit">
+		<label for="emailAddress">Email Address: </label>
+		<input id="emailAddress" name="emailAddress" /><!--required type="email"/>-->
+		<div>{{ errorMessages?.emailAddressErrorMessage }}</div>
 
-    <div> {{ headerErrorMessage }}</div>
-
-    <label for="emailAddress">Email Address: </label>
-    <input id="emailAddress" name="emailAddress" type="email" required/>
-    <div>{{ errorMessages?.emailAddressErrorMessage }}</div>
-
-    <button
-        class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded"
-        type="submit" @keyup.enter="submit">
-      Register
-    </button>
-
-  </form>
+		<button class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded" type="submit" @keyup.enter="submit">Register</button>
+	</form>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
+import { onBeforeMount } from 'vue';
+import { ErrorMessageFactory } from '@/lib/error/ErrorMessageFactory.ts';
+import { FormTypeEnum } from '@/lib/FormTypeEnum.ts';
+import { RegisterAPIResponse } from '@/lib/RegisterAPIResponse.ts';
+import { ErrorCode } from '@/lib/error/ErrorCode.ts';
+import { ErrorMessages } from '@/lib/error/ErrorMessages.ts';
+import { NBSP } from '@/constants/constants.ts';
 
-
-import {onBeforeMount, ref} from "vue";
-import {ErrorMessageFactory} from "@/lib/error/ErrorMessageFactory.ts"
-import {FormTypeEnum} from "@/lib/FormTypeEnum.ts";
-import {RegisterAPIDataResponse} from "@/lib/RegisterAPIDataResponse.ts";
-import {ErrorCode} from "@/lib/error/ErrorCode.ts";
-import {ErrorMessages} from "@/lib/error/ErrorMessages.ts";
-import {NBSP} from "@/constants/constants.ts";
-
-
-
-
-const emailAddress = ref<string>()
-const lastId = ref<number>()
-const errorMessages = ref<ErrorMessages>()
-const headerErrorMessage = ref<string>()
+let emailAddress: string | undefined;
+let lastId: string | undefined;
+let nextPage: string | undefined;
+let errorMessages: ErrorMessages;
+let headerErrorMessage: string | undefined;
 
 onBeforeMount(async () => {
-  const noErrorCodes : ErrorCode[] = []
-  errorMessages.value = ErrorMessageFactory.instance.getMessage(FormTypeEnum.Registration, noErrorCodes);
-  deriveAnyHeaderErrors()
-})
+	const noErrorCodes: ErrorCode[] = [];
+	errorMessages = ErrorMessageFactory.instance.getMessage(FormTypeEnum.Registration, noErrorCodes);
+	deriveAnyHeaderErrors();
+});
 
-function deriveAnyHeaderErrors(){
+function deriveAnyHeaderErrors() {
+	if (errorMessages?.maxEmailsFromThisIPAddress && errorMessages.maxEmailsFromThisIPAddress !== NBSP) {
+		headerErrorMessage = errorMessages.maxEmailsFromThisIPAddress;
+		return;
+	}
 
-  if ( errorMessages.value?.maxEmailsFromThisIPAddress && errorMessages.value.maxEmailsFromThisIPAddress !== NBSP ){
-    headerErrorMessage.value  = errorMessages.value.maxEmailsFromThisIPAddress;
-    return
-  }
+	if (errorMessages?.maxRegistrationSpeed && errorMessages.maxRegistrationSpeed !== NBSP) {
+		headerErrorMessage = errorMessages.maxRegistrationSpeed;
+		return;
+	}
 
-  if ( errorMessages.value?.maxRegistrationSpeed && errorMessages.value.maxRegistrationSpeed !== NBSP ){
-    headerErrorMessage.value  = errorMessages.value.maxRegistrationSpeed;
-    return
-  }
-
-  headerErrorMessage.value = NBSP
-
+	headerErrorMessage = NBSP;
 }
 
 async function submit(e: Event) {
-  const formData = new FormData(e.currentTarget as HTMLFormElement);
-  const response = await fetch("/api/register", {
-    method: "POST",
-    body: formData,
-  });
+	const formData = new FormData(e.currentTarget as HTMLFormElement);
+	const response = await fetch('/api/v1/register.json', {
+		method: 'POST',
+		body: JSON.stringify(Object.fromEntries(formData))
+	});
 
-  const dataResponse: RegisterAPIDataResponse = await response.json();
+	const dataResponse: RegisterAPIResponse = await response.json();
 
-  emailAddress.value = dataResponse.emailAddress
-  lastId.value = dataResponse.lastId;
-  const errorCodes : ErrorCode[] | undefined = dataResponse.errorCodes
+	emailAddress = dataResponse.emailAddress;
+	lastId = dataResponse?.lastId;
+	nextPage = dataResponse.nextPage;
+	console.log('nextPage.value: ' + nextPage);
+	const errorCodes: ErrorCode[] | undefined = dataResponse.errorCodes;
 
-  errorMessages.value = ErrorMessageFactory.instance.getMessage(FormTypeEnum.Registration, errorCodes);
-  deriveAnyHeaderErrors()
-
+	if (errorCodes && errorCodes.length != 0) {
+		errorMessages = ErrorMessageFactory.instance.getMessage(FormTypeEnum.Registration, errorCodes);
+		deriveAnyHeaderErrors();
+	} else {
+		window.location.href = nextPage || '/';
+	}
 }
-
 </script>
 
-
-<style scoped>
-
-</style>
+<style scoped></style>

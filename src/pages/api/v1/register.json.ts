@@ -1,0 +1,150 @@
+import type { APIContext, APIRoute } from 'astro';
+import { sql } from '@/lib/neon.ts';
+import { DateTime } from 'luxon';
+
+import { ErrorCode } from '@/lib/error/ErrorCode.ts';
+import { logger } from '@/utils/logger.ts';
+import { NeonDbError } from '@neondatabase/serverless';
+import { RegisterAPIResponse } from '@/lib/RegisterAPIResponse.ts';
+import type { RegistrationPageData } from '@/types/RegistrationPageData.ts';
+
+import { RegistrationSchema } from '@/pages/validation/indexPageValidation.ts';
+import type { Registration } from '@/pages/validation/indexPageValidation.ts';
+import type { ZodSafeParseResult } from 'zod';
+import { ErrorLoggerMessageFactory } from '@/lib/error/ErrorLoggerMessageFactory.ts';
+import { FormTypeEnum } from '@/lib/FormTypeEnum.ts';
+import { APIResponseBuilder } from '@/lib/APIResponseBuilder.ts';
+
+const MULTI_REGISTRATION_TIMEOUT: number = import.meta.env.MULTI_REGISTRATION_TIMEOUT;
+const MULTI_REGISTRATION_LIMIT: number = parseInt(import.meta.env.MULTI_REGISTRATION_LIMIT);
+
+const TABLE: string = 'participants';
+
+export const GET: APIRoute = (async (context: APIContext) => {
+	return new Response(JSON.stringify({ status: 'Success' }));
+}) satisfies APIRoute;
+
+async function registrationsTooQuickly(ipAddress: string): Promise<ErrorCode[]> {
+	const errorCodes: ErrorCode[] = [];
+	const mostRecentCreatedAtRecords = await sql`select max(created_at)
+                                                     from ${sql.unsafe(TABLE)}
+                                                     where ip_address = ${ipAddress}`;
+
+	const mostRecentCreatedAtInMillis = DateTime.fromJSDate(mostRecentCreatedAtRecords[0].max).toUTC().toMillis();
+
+	if (DateTime.utc().toMillis() - mostRecentCreatedAtInMillis < MULTI_REGISTRATION_TIMEOUT) {
+		errorCodes.push(ErrorCode.MaxRegistrationSpeed);
+		logger.log({
+			level: 'info',
+			message: 'Speed of Registration Limit reached' + ipAddress
+		});
+	}
+
+	return errorCodes;
+}
+
+async function tooManyRegistrationFromIP(ipAddress: string): Promise<ErrorCode[]> {
+	const errorCodes: ErrorCode[] = [];
+	const howManyRegisteredFromThisIPRecords = await sql`select count(*)
+                                                             from ${sql.unsafe(TABLE)}
+                                                             where ip_address = ${ipAddress}`;
+
+	const howManyRegisteredFromThisIP: number = parseInt(howManyRegisteredFromThisIPRecords[0].count);
+
+	//logger.log({level: "info", message: "howManyRegisteredFromThisIPRecords[0].count: " + howManyRegisteredFromThisIPRecords[0].count})
+
+	if (howManyRegisteredFromThisIP >= MULTI_REGISTRATION_LIMIT) {
+		errorCodes.push(ErrorCode.MaxEmailsFromThisIPAddress);
+		logger.log({
+			level: 'info',
+			message: 'Max Registration Limit reached for ip address' + ipAddress
+		});
+	}
+
+	return errorCodes;
+}
+
+export const POST: APIRoute = (async (context: APIContext) => {
+	const cookieData: RegistrationPageData = { emailAddress: '', lastId: '' };
+	const dataOut = new Map<string, string>();
+	let lastId: string | undefined;
+	const errorCodes: ErrorCode[] = [];
+
+	const requestBody: object = await context.request.json();
+
+	const registrationValid: ZodSafeParseResult<Registration> = RegistrationSchema.safeParse(requestBody);
+
+	logger.log({ level: 'info', message: JSON.stringify(registrationValid) });
+
+	if (registrationValid.error) {
+		const errorCodeAsString: string = registrationValid.error.message;
+		let errorCode = ErrorCode.valueOf(errorCodeAsString);
+		errorCodes.push(errorCode);
+		const registrationResponse: RegisterAPIResponse = RegisterAPIResponse.builder.setData(dataOut).setErrorCodes(errorCodes).build();
+		return new Response(JSON.stringify(registrationResponse), {
+			status: 400
+		});
+	}
+
+	const emailAddress: string = registrationValid.data.emailAddress;
+	const ipAddress = context.clientAddress;
+	const createdAt = DateTime.now().toUTC();
+
+	logger.log({ level: 'info', message: 'ipAddress: ' + ipAddress });
+
+	try {
+		if (!ipAddress) {
+			logger.log({
+				level: 'error',
+				message: "No IP Address 'provided'"
+			});
+
+			return new Response('Internal Server error; We will look into this', {
+				status: 500
+			});
+		}
+
+		errorCodes.concat(await registrationsTooQuickly(ipAddress));
+		errorCodes.concat(await tooManyRegistrationFromIP(ipAddress));
+
+		if (errorCodes.length === 0) {
+			await sql`
+                INSERT
+                INTO participants("email_address", "ip_address", "created_at")
+                VALUES (${emailAddress}, ${ipAddress}, ${createdAt})`;
+
+			logger.log({
+				level: 'info',
+				message: 'Email: ' + emailAddress + ', ip address: ' + ipAddress + ' registered'
+			});
+
+			const lastIdResponse = await sql`SELECT last_value
+                 FROM participants_id_seq`;
+			lastId = lastIdResponse[0].last_value.toString();
+
+			if (emailAddress) {
+				dataOut.set('emailAddress', emailAddress);
+			}
+
+			if (lastId) {
+				dataOut.set('lastId', lastId);
+			}
+		}
+	} catch (error: unknown) {
+		if (error instanceof NeonDbError) {
+			errorCodes.push(ErrorCode.DuplicateEmail);
+		} else {
+			errorCodes.push(ErrorCode.Unknown);
+		}
+	}
+
+	cookieData.emailAddress = emailAddress || '';
+	cookieData.lastId = lastId || '';
+	context.session?.set('pageData', cookieData);
+
+	const nextPage: string = 'success';
+	const registrationResponse: RegisterAPIResponse = RegisterAPIResponse.builder.setData(dataOut).setErrorCodes(errorCodes).setNextPage(nextPage).build();
+	return new Response(JSON.stringify(registrationResponse), { status: 200 });
+}) satisfies APIRoute;
+
+export default POST;
