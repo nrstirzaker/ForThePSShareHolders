@@ -1,4 +1,5 @@
-import type { ErrorCode } from '@/lib/error/ErrorCode.ts';
+import { ErrorCodes } from '@/lib/error/ErrorCode.ts';
+const ErrorCode = ErrorCodes.ErrorCode;
 
 export interface APIResponseBuilder {
 	data(data: Map<string, string>): APIResponseBuilder;

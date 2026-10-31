@@ -15,9 +15,10 @@ import { onBeforeMount } from 'vue';
 import { ErrorMessageFactory } from '@/lib/error/ErrorMessageFactory.ts';
 import { FormTypeEnum } from '@/lib/FormTypeEnum.ts';
 import { RegisterAPIResponse } from '@/lib/RegisterAPIResponse.ts';
-import { ErrorCode } from '@/lib/error/ErrorCode.ts';
 import { ErrorMessages } from '@/lib/error/ErrorMessages.ts';
 import { NBSP } from '@/constants/constants.ts';
+import { ErrorCodes } from '@/lib/error/ErrorCode.ts';
+import ErrorCode = ErrorCodes.ErrorCode;
 
 let emailAddress: string | undefined;
 let lastId: string | undefined;
@@ -54,8 +55,8 @@ async function submit(e: Event) {
 
 	const dataResponse: RegisterAPIResponse = await response.json();
 
-	emailAddress = dataResponse.emailAddress;
-	lastId = dataResponse?.lastId;
+	emailAddress = dataResponse.getEmailAddress();
+	lastId = dataResponse?.getLastId();
 	nextPage = dataResponse.nextPage;
 	console.log('nextPage.value: ' + nextPage);
 	const errorCodes: ErrorCode[] | undefined = dataResponse.errorCodes;

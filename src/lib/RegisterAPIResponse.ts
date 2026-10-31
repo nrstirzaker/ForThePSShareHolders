@@ -21,4 +21,12 @@ export class RegisterAPIResponse extends APIResponse {
 			}
 		})();
 	}
+
+	public getEmailAddress(): string | undefined {
+		return this.emailAddress;
+	}
+
+	public getLastId(): string | undefined {
+		return this.lastId;
+	}
 }
