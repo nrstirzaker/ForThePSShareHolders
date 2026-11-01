@@ -15,7 +15,10 @@ import { onBeforeMount } from 'vue';
 import { ErrorMessageFactory } from '@/lib/error/ErrorMessageFactory.ts';
 import { FormTypeEnum } from '@/lib/FormTypeEnum.ts';
 import { RegisterAPIResponse } from '@/lib/RegisterAPIResponse.ts';
-import { ErrorCode } from '@/lib/error/ErrorCode.ts';
+import { ErrorCodes} from '@/lib/error/ErrorCodes.ts';
+import ErrorCode = ErrorCodes.ErrorCode;
+
+
 import { ErrorMessages } from '@/lib/error/ErrorMessages.ts';
 import { NBSP } from '@/constants/constants.ts';
 

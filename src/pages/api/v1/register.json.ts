@@ -2,7 +2,8 @@ import type { APIContext, APIRoute } from 'astro';
 import { sql } from '@/lib/neon.ts';
 import { DateTime } from 'luxon';
 
-import { ErrorCode } from '@/lib/error/ErrorCode.ts';
+import { ErrorCodes } from '@/lib/error/ErrorCodes.ts';
+import ErrorCode = ErrorCodes.ErrorCode;
 import { logger } from '@/utils/logger.ts';
 import { NeonDbError } from '@neondatabase/serverless';
 import { RegisterAPIResponse } from '@/lib/RegisterAPIResponse.ts';

@@ -1,7 +1,7 @@
 import {FormTypeEnum} from "@/lib/FormTypeEnum.ts";
-import {ErrorCode} from "@/lib/error/ErrorCode.ts";
+import {ErrorCodes} from "@/lib/error/ErrorCodes.ts";
 import {ErrorMessages} from "@/lib/error/ErrorMessages.ts";
-
+import ErrorCode = ErrorCodes.ErrorCode;
 export class ErrorMessageFactory {
     static #instance: ErrorMessageFactory;
 

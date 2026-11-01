@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {logger} from "@/utils/logger"
-import {ErrorCode} from "@/lib/error/ErrorCode.ts";
+import {ErrorCodes} from "@/lib/error/ErrorCodes.ts";
+import ErrorCode = ErrorCodes.ErrorCode;
 
 
 export const RegistrationSchema = z.object({

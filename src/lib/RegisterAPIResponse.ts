@@ -1,4 +1,4 @@
-import { ErrorCodes } from '@/lib/error/ErrorCode.ts';
+import { ErrorCodes } from '@/lib/error/ErrorCodes.ts';
 import ErrorCode = ErrorCodes.ErrorCode;
 import { APIResponse } from '@/lib/APIResponse.ts';
 import { APIResponseBuilder } from '@/lib/APIResponseBuilder.ts';

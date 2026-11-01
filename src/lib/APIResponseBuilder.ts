@@ -1,6 +1,6 @@
 import { APIResponse } from '@/lib/APIResponse.ts';
 import { RegisterAPIResponse } from '@/lib/RegisterAPIResponse.ts';
-import { ErrorCodes } from '@/lib/error/ErrorCode.ts';
+import { ErrorCodes } from '@/lib/error/ErrorCodes.ts';
 import ErrorCode = ErrorCodes.ErrorCode;
 
 export abstract class APIResponseBuilder<T> {
