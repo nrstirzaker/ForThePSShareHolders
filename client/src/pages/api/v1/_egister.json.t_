@@ -11,7 +11,7 @@ import type { RegistrationPageData } from '@/types/RegistrationPageData.ts';
 
 import { RegistrationSchema } from '@/pages/validation/indexPageValidation.ts';
 import type { Registration } from '@/pages/validation/indexPageValidation.ts';
-import type { ZodSafeParseResult } from 'zod';
+import type { ZodSafeParseResult } from 'astro:schema';
 import { ErrorLoggerMessageFactory } from '@/lib/error/ErrorLoggerMessageFactory.ts';
 import { FormTypeEnum } from '@/lib/FormTypeEnum.ts';
 import { APIResponseBuilder } from '@/lib/APIResponseBuilder.ts';

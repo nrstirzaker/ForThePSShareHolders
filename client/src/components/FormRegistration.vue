@@ -15,9 +15,8 @@ import { onBeforeMount } from 'vue';
 import { ErrorMessageFactory } from '@/lib/error/ErrorMessageFactory.ts';
 import { FormTypeEnum } from '@/lib/FormTypeEnum.ts';
 import { RegisterAPIResponse } from '@/lib/RegisterAPIResponse.ts';
-import { ErrorCodes} from '@/lib/error/ErrorCodes.ts';
+import { ErrorCodes } from '@/lib/error/ErrorCodes.ts';
 import ErrorCode = ErrorCodes.ErrorCode;
-
 
 import { ErrorMessages } from '@/lib/error/ErrorMessages.ts';
 import { NBSP } from '@/constants/constants.ts';
@@ -49,26 +48,28 @@ function deriveAnyHeaderErrors() {
 }
 
 async function submit(e: Event) {
+	console.log('FormRegistration:submit:start');
 	const formData = new FormData(e.currentTarget as HTMLFormElement);
-	const response = await fetch('/api/v1/register.json', {
+	const response = await fetch('/api/v1/register', {
 		method: 'POST',
 		body: JSON.stringify(Object.fromEntries(formData))
 	});
+	console.log('FormRegistration:submit:end');
 
-	const dataResponse: RegisterAPIResponse = await response.json();
-
-	emailAddress = dataResponse.emailAddress;
-	lastId = dataResponse?.lastId;
-	nextPage = dataResponse.nextPage;
-	console.log('nextPage.value: ' + nextPage);
-	const errorCodes: ErrorCode[] | undefined = dataResponse.errorCodes;
-
-	if (errorCodes && errorCodes.length != 0) {
-		errorMessages = ErrorMessageFactory.instance.getMessage(FormTypeEnum.Registration, errorCodes);
-		deriveAnyHeaderErrors();
-	} else {
-		window.location.href = nextPage || '/';
-	}
+	// const dataResponse: RegisterAPIResponse = await response.json();
+	//
+	// emailAddress = dataResponse.emailAddress;
+	// lastId = dataResponse?.lastId;
+	// nextPage = dataResponse.nextPage;
+	// console.log('nextPage.value: ' + nextPage);
+	// const errorCodes: ErrorCode[] | undefined = dataResponse.errorCodes;
+	//
+	// if (errorCodes && errorCodes.length != 0) {
+	// 	errorMessages = ErrorMessageFactory.instance.getMessage(FormTypeEnum.Registration, errorCodes);
+	// 	deriveAnyHeaderErrors();
+	// } else {
+	// 	window.location.href = nextPage || '/';
+	// }
 }
 </script>
 

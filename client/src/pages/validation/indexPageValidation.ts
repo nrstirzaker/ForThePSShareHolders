@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "astro:schema";
 import {logger} from "@/utils/logger"
 import {ErrorCodes} from "@/lib/error/ErrorCodes.ts";
 import ErrorCode = ErrorCodes.ErrorCode;

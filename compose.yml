@@ -1,0 +1,16 @@
+services:
+  web:
+    build: ./client .
+    ports:
+      - "4321:4321"
+    networks:
+      - isolated
+  server:
+    build: ./server .
+    expose:
+      - "3001"
+    networks:
+        - isolated
+networks:
+  isolated:
+    driver: bridge

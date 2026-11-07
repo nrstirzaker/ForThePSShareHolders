@@ -1,36 +1,8 @@
 {
-  "name": "forthepsshareholders",
-  "type": "module",
-  "version": "0.0.1",
-  "engines": {
-    "node": ">=22.12.0"
-  },
-  "scripts": {
-    "dev": "astro dev",
-    "stop": "astro dev stop",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro",
-    "test": "mocha test/test.js"
-  },
-  "dependencies": {
-    "@astrojs/node": "^11.1.9",
-    "@astrojs/vue": "^7.0.2",
-    "@neondatabase/serverless": "^1.1.0",
-    "@tailwindcss/vite": "^4.3.3",
-    "@types/luxon": "^3.7.4",
-    "astro": "7.3.6",
-    "dotenv": "^17.4.2",
-    "luxon": "^3.7.2",
-    "mocha": "^12.0.2",
-    "pactum": "^3.9.1",
-    "pinia": "^4.0.3",
-    "tailwindcss": "^4.3.3",
-    "vue": "^3.5.41",
-    "winston": "^3.19.0",
-    "zod": "^4.6.2"
-  },
-  "devDependencies": {
-    "prettier": "3.9.9"
-  }
+	"devDependencies": {
+		"@types/express": "^5.0.6",
+		"@types/node": "^26.6.6",
+		"mocha": "^12.0.3",
+		"typescript": "^7.0.2"
+	}
 }
